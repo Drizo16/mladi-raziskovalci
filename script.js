@@ -1,53 +1,56 @@
 /* Počakamo, da se celotna stran (HTML) naloži */
 document.addEventListener("DOMContentLoaded", function() {
 
-    /* Najprej v kodi najdemo najin zeleni gumb in glavno vsebino */
     const gumbKamera = document.getElementById("gumbKamera");
-    const glavnaVsebina = document.querySelector(".vsebina"); // Potrebujemo to, da prikažemo sporočilo
+    const glavnaVsebina = document.querySelector(".vsebina"); 
 
-    /* Ustvarimo skriti element za nalaganje datotek (slik) */
     const nalaganjeSlike = document.createElement("input");
     nalaganjeSlike.type = "file";
     nalaganjeSlike.accept = "image/*";
     nalaganjeSlike.capture = "environment";
 
-    /* "Poslušamo", ali bo kdo kliknil na najin zeleni gumb */
     gumbKamera.addEventListener("click", function() {
         nalaganjeSlike.click();
     });
 
     /* Ko bo uporabnik POSNEL sliko in jo potrdil, se zgodi TO: */
-    nalaganjeSlike.addEventListener("change", async function(dogodek) { // Opazi 'async' - to pomeni, da bomo nekaj čakali
+    nalaganjeSlike.addEventListener("change", async function(dogodek) { // 'async' pomeni, da bomo nekaj čakali
         
         if (dogodek.target.files && dogodek.target.files[0]) {
-            const slika = dogodek.target.files[0];
+            const slikaDatoteka = dogodek.target.files[0];
             
-            console.log("Uporabnik je posnel sliko:", slika.name);
+            console.log("Uporabnik je posnel sliko:", slikaDatoteka.name);
 
-            /* ===== NOVO: TUKAJ SE ZAČNE ČAROVNIJA ===== */
-            
             // 1. Pokažemo uporabniku, da se nekaj dogaja
-            glavnaVsebina.innerHTML = "<h2>IŠČEM ODGOVOR V GOZDU... PROSIM, POČAKAJ.</h2>";
+            glavnaVsebina.innerHTML = "<h2>PREPOZNAVAM RASTLINO... PROSIM, POČAKAJ.</h2>";
 
-            // 2. To je naslov najine "strojnice", ki sva jo prej testirala
+            // 2. NOVO: Sliko pretvorimo v Base64 besedilo, ki ga lahko pošljemo
+            const base64Slika = await pretvoriVB64(slikaDatoteka);
+            
+            // 3. To je naslov najine "strojnice"
             const naslovStrojnice = "/.netlify/functions/prepoznaj"; 
 
             try {
-                // 3. PRVI TEST: Ne pošljiva še slike, pošljiva samo testno sporočilo
-                // Tvojemu imenu dodava 'POST' metodo, kot je zahtevala strojnica
+                // 4. Zdaj pošljemo PRAVO sliko (kot besedilo) v strojnico
                 const odgovor = await fetch(naslovStrojnice, {
                     method: 'POST',
-                    body: JSON.stringify({ ime: "Andraž" }) // Pošljemo testne podatke
+                    body: JSON.stringify({ 
+                        slika: base64Slika // Pošljemo Base64 sliko
+                    }) 
                 });
 
-                // 4. Preberemo odgovor, ki ga je poslala strojnica
+                // 5. Preberemo odgovor, ki ga je poslala strojnica
                 const podatki = await odgovor.json();
 
-                // 5. ZMAGA! Prikažemo podatke, ki smo jih dobili nazaj
+                // 6. Preverimo, ali je strojnica vrnila napako
+                if (podatki.napaka) {
+                    throw new Error(podatki.napaka);
+                }
+
+                // 7. ZMAGA! Prikažemo podatke, ki smo jih dobili nazaj
                 console.log("Dobil sem odgovor od strojnice:", podatki);
                 
-                // Namesto alert-a, kar zamenjajmo vsebino strani!
-                // (Kasneje bova to naredila lepše, kot si opisal na "Drugi strani")
+                // Prikažemo rezultate (kasneje bo to lepša stran)
                 glavnaVsebina.innerHTML = `
                     <h1>${podatki.drevo}</h1>
                     <p style="font-size: 1.2em; padding: 20px; text-transform: uppercase;">
@@ -57,11 +60,23 @@ document.addEventListener("DOMContentLoaded", function() {
                 `;
 
             } catch (napaka) {
-                // 6. Če je šlo karkoli narobe (npr. ni interneta)
-                console.error("Zgodila se je napaka pri klicu strojnice:", napaka);
-                glavnaVsebina.innerHTML = "<h2>UPS! NEKAJ JE ŠLO NAROBE. POSKUSI ZNOVA.</h2>";
+                // 8. Če je šlo karkoli narobe
+                console.error("Zgodila se je napaka:", napaka);
+                glavnaVsebina.innerHTML = `<h2>UPS! NEKAJ JE ŠLO NAROBE. JE BILA SLIKA DOVOLJ JASNA? POSKUSI ZNOVA.</h2><p>${napaka.message}</p>`;
             }
-            /* ===== KONEC ČAROVNIJE ===== */
         }
     });
+
+    /**
+     * Pomožna funkcija, ki pretvori datoteko slike v Base64 besedilo
+     */
+    function pretvoriVB64(datoteka) {
+        return new Promise((resolve, reject) => {
+            const bralnik = new FileReader();
+            bralnik.readAsDataURL(datoteka);
+            bralnik.onload = () => resolve(bralnik.result);
+            bralnik.onerror = error => reject(error);
+        });
+    }
+
 });
