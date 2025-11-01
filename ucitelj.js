@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function() {
     async function naloziNajdbe() {
         try {
             // Pokličemo najino novo "strojnico za branje"
-            const odgovor = await fetch("/.netlify/functions/pridobi-najdbe");
+            const odgovor = await fetch("/api/pridobi-najdbe");
             if (!odgovor.ok) {
                 const napaka = await odgovor.json();
                 throw new Error(napaka.napaka || "Napaka strežnika");

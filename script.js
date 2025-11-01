@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", function() {
             try {
                 const formData = new FormData();
                 formData.append('slika', slikaDatoteka, slikaDatoteka.name);
-                const naslovStrojnice = "/.netlify/functions/prepoznaj"; 
+                const naslovStrojnice = "/api/prepoznaj"; 
 
                 const odgovor = await fetch(naslovStrojnice, {
                     method: 'POST',
@@ -135,7 +135,7 @@ document.addEventListener("DOMContentLoaded", function() {
             gumbShrani.textContent = "SHRANJUJEM...";
             gumbShrani.disabled = true;
 
-            const naslovStrojniceShrani = "/.netlify/functions/shrani";
+            const naslovStrojniceShrani = "/api/shrani";
 
             try {
                 const odgovor = await fetch(naslovStrojniceShrani, {
