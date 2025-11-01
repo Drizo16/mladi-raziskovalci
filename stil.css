@@ -1,0 +1,85 @@
+/* Ta zvezdica pove, da naj vse na strani upošteva ta pravila */
+* {
+    /* To poskrbi, da se velikosti "škatel" lažje računajo */
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Vpliva na celotno stran */
+body {
+    /* Uporabimo pisavo brez "kavljic", ki je lažja za branje */
+    font-family: Arial, Helvetica, sans-serif;
+    /* Tvoja ideja: pastelno zeleno ozadje */
+    background-color: #f0f9f0; /* To je zelo svetla, pastelna zelena */
+    /* Vse na strani naj bo poravnano na sredino */
+    text-align: center;
+}
+
+/* Stil za zgornjo pasico */
+.solska-pasica {
+    background-color: #e0e0e0; /* Samo za primer, da vidiva, kje je */
+    padding: 10px;
+    font-style: italic;
+    color: #555;
+}
+
+/* Stil za glavno vsebino */
+.vsebina {
+    padding: 20px;
+}
+
+/* Glavni naslov */
+h1 {
+    font-size: 3em; /* Velika pisava */
+    color: #006400; /* Temno zelena */
+    /* Tvoja ključna zahteva: VSE VELIKE ČRKE */
+    text-transform: uppercase;
+}
+
+/* Podnaslov */
+h2 {
+    font-size: 1.5em;
+    color: #333;
+    /* Tudi podnaslov bo z velikimi tiskanimi */
+    text-transform: uppercase;
+    margin-bottom: 30px; /* Malo prostora pod podnaslovom */
+}
+
+/* Gumb za kamero (uporabimo ID, ki smo ga določili v HTML) */
+#gumbKamera {
+    width: 150px;           /* Širina gumba */
+    height: 150px;          /* Višina gumba */
+    background-color: #34a853; /* Tvoja zelena barva */
+    /* Naredi gumb popoln krog */
+    border-radius: 50%;
+    /* Postavi gumb na sredino (vodoravno) */
+    margin: 0 auto;
+    /* Uporabimo 'flex' za lažje centriranje ikone v notranjosti */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Naredi kazalec miške v obliko roke, ko gremo čez */
+    cursor: pointer;
+    /* Malo sence, da izgleda kot gumb */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* To je samo besedilo "PROSTOR ZA IKONO", ki ga bova zamenjala */
+#gumbKamera p {
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.8em;
+    padding: 10px;
+}
+
+/* Stil za nogo na dnu */
+.noga {
+    position: absolute;
+    bottom: 10px;
+    width: 100%;
+    font-size: 0.8em;
+    color: #777;
+    text-transform: uppercase;
+}
