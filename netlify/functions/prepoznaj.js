@@ -21,9 +21,7 @@ exports.handler = async function(event, context) {
         // Preberemo Base64 sliko, ki jo je poslal 'script.js'
         base64Slika = JSON.parse(event.body).slika;
         
-        // Odstranimo nepotreben delček 'data:image/jpeg;base64,'
-        // PlantNet potrebuje samo surovo Base64 kodo
-        base64Slika = base64Slika.split(",")[1];
+        // Slike ne spreminjamo, pošljemo jo kar celo (z 'data:image...' glavo)
         
     } catch (e) {
         return {
