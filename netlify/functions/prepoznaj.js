@@ -23,7 +23,7 @@ exports.handler = async function(event, context) {
         
         // Odstranimo nepotreben delček 'data:image/jpeg;base64,'
         // PlantNet potrebuje samo surovo Base64 kodo
-        base64Slika = base64Slika.split(",")[1];
+       
         
     } catch (e) {
         return {
