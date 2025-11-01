@@ -1,4 +1,5 @@
-/* Počakamo, da se celotna stran (HTML) naloži */
+/* === KODA ZA script.js (s slikami in gumbom "Nazaj") === */
+
 document.addEventListener("DOMContentLoaded", function() {
 
     const gumbKamera = document.getElementById("gumbKamera");
@@ -13,108 +14,153 @@ document.addEventListener("DOMContentLoaded", function() {
         nalaganjeSlike.click();
     });
 
-    /* Ko bo uporabnik POSNEL sliko in jo potrdil, se zgodi TO: */
-    nalaganjeSlike.addEventListener("change", async function(dogodek) { // 'async' pomeni, da bomo nekaj čakali
-        
+    nalaganjeSlike.addEventListener("change", async function(dogodek) { 
+
         if (dogodek.target.files && dogodek.target.files[0]) {
             const slikaDatoteka = dogodek.target.files[0];
-            
-            console.log("Uporabnik je posnel sliko:", slikaDatoteka.name);
 
-            // 1. Pokažemo uporabniku, da se nekaj dogaja
-            glavnaVsebina.innerHTML = "<h2>OBDELUJEM SLIKO IN PREPOZNAVAM RASTLINO...</h2>";
+            console.log("Uporabnik je posnel sliko:", slikaDatoteka.name);
+            glavnaVsebina.innerHTML = "<h2>RAZISKUJEM TVOJO RASTLINO ...</h2>";
 
             try {
-                // 2. NOVO: Sliko stisnemo in pretvorimo v standardni JPEG format
-                const base64Slika = await stisniInPretvoriSliko(slikaDatoteka);
-                
-                // 3. To je naslov najine "strojnice"
+                const formData = new FormData();
+                formData.append('slika', slikaDatoteka, slikaDatoteka.name);
                 const naslovStrojnice = "/.netlify/functions/prepoznaj"; 
 
-                // 4. Zdaj pošljemo čisto JPEG sliko v strojnico
                 const odgovor = await fetch(naslovStrojnice, {
                     method: 'POST',
-                    body: JSON.stringify({ 
-                        slika: base64Slika // Pošljemo Base64 JPEG sliko
-                    }) 
+                    body: formData 
                 });
-
-                // 5. Preberemo odgovor, ki ga je poslala strojnica
                 const podatki = await odgovor.json();
 
-                // 6. Preverimo, ali je strojnica vrnila napako
-                if (podatki.napaka) {
-                    throw new Error(podatki.napaka);
-                }
-
-                // 7. ZMAGA! Prikažemo podatke, ki smo jih dobili nazaj
+                if (podatki.napaka) { throw new Error(podatki.napaka); }
                 console.log("Dobil sem odgovor od strojnice:", podatki);
-                
-                glavnaVsebina.innerHTML = `
-                    <h1>${podatki.drevo}</h1>
-                    <p style="font-size: 1.2em; padding: 20px; text-transform: uppercase;">
-                        ${podatki.zgodba}
-                    </p>
-                    <h3 style="margin-top: 20px;">${podatki.zanimivost}</h3>
-                `;
+
+                // NOVO: Pošljemo tudi slike v funkcijo za prikaz
+                prikaziRezultate(podatki.drevo, podatki.zgodba, podatki.slike);
 
             } catch (napaka) {
-                // 8. Če je šlo karkoli narobe
                 console.error("Zgodila se je napaka:", napaka);
-                glavnaVsebina.innerHTML = `<h2>UPS! NEKAJ JE ŠLO NAROBE. JE BILA SLIKA DOVOLJ JASNA? POSKUSI ZNOVA.</h2><p>${napaka.message}</p>`;
+                glavnaVsebina.innerHTML = `<h2>UPS! NEKAJ JE ŠLO NAROBE. POSKUSI ZNOVA.</h2><p>${napaka.message}</p>`;
             }
         }
     });
 
     /**
-     * NOVA FUNKCIJA ("Stiskalnica za Jabolka" oz. Canvas)
-     * Vzame katerokoli sliko in jo vrne kot Base64 JPEG.
+     * FUNKCIJA (FAZA 4)
+     * Zgradi lep HTML za prikaz rezultatov
      */
-    function stisniInPretvoriSliko(datoteka) {
-        return new Promise((resolve, reject) => {
-            const bralnik = new FileReader();
-            bralnik.readAsDataURL(datoteka);
-            bralnik.onload = function(dogodek) {
-                const slika = new Image();
-                slika.src = dogodek.target.result;
-                slika.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    
-                    // Nastavimo velikost - pomanjšajmo slike, če so prevelike (hitrejše pošiljanje)
-                    const MAX_SIRINA = 1024;
-                    const MAX_VISINA = 1024;
-                    let sirina = slika.width;
-                    let visina = slika.height;
+    function prikaziRezultate(imeDrevesa, zgodba, slike) {
 
-                    if (sirina > visina) {
-                        if (sirina > MAX_SIRINA) {
-                            visina *= MAX_SIRINA / sirina;
-                            sirina = MAX_SIRINA;
-                        }
-                    } else {
-                        if (visina > MAX_VISINA) {
-                            sirina *= MAX_VISINA / visina;
-                            visina = MAX_VISINA;
-                        }
-                    }
-                    canvas.width = sirina;
-                    canvas.height = visina;
+        glavnaVsebina.innerHTML = ""; // Počistimo vsebino
+        const naslov = document.createElement("h1");
+        naslov.textContent = imeDrevesa;
+        glavnaVsebina.appendChild(naslov);
 
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(slika, 0, 0, sirina, visina);
+        const slikeBox = document.createElement("div");
+        slikeBox.className = "slike-box";
 
-                    // To je ključni del: Sliko pretvorimo v JPEG z 80% kvaliteto
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-                    
-                    resolve(dataUrl);
-                };
-                slika.onerror = function(napaka) {
-                    reject(napaka);
-                };
-            };
-            bralnik.onerror = function(napaka) {
-                reject(napaka);
-            };
+        // ***************************************************************
+        // NOVO: PRAVE SLIKE V KVADRATKE
+        if (slike && slike.length > 0) {
+            slike.forEach(url => {
+                const imgElement = document.createElement("img");
+                imgElement.src = url;
+                imgElement.alt = "Slika rastline";
+                imgElement.className = "slika-rastline-mala"; // Nov class za stil
+                slikeBox.appendChild(imgElement);
+            });
+        } else {
+            slikeBox.innerHTML = `
+                <div class="slika-placeholder">(NI SLIK)</div>
+            `;
+        }
+        glavnaVsebina.appendChild(slikeBox);
+        // ***************************************************************
+
+
+        const zgodbaOdstavek = document.createElement("p");
+        zgodbaOdstavek.className = "zgodba";
+        zgodbaOdstavek.textContent = zgodba;
+        glavnaVsebina.appendChild(zgodbaOdstavek);
+
+        const gumbPoslusaj = document.createElement("button");
+        gumbPoslusaj.id = "gumbPoslusaj";
+        gumbPoslusaj.className = "gumb-akcija";
+        gumbPoslusaj.textContent = "POSLUŠAJ ZGODBO";
+        glavnaVsebina.appendChild(gumbPoslusaj);
+
+        const gumbShrani = document.createElement("button");
+        gumbShrani.id = "gumbShrani";
+        gumbShrani.className = "gumb-akcija";
+        gumbShrani.textContent = "SHRANI V SKRINJO ZAKLADOV";
+        glavnaVsebina.appendChild(gumbShrani);
+
+        // ***************************************************************
+        // NOVO: GUMB "VRNI SE NA ZAČETEK"
+        const gumbNazaj = document.createElement("button");
+        gumbNazaj.id = "gumbNazaj";
+        gumbNazaj.className = "gumb-akcija";
+        gumbNazaj.textContent = "VRNI SE NA ZAČETEK";
+        glavnaVsebina.appendChild(gumbNazaj);
+
+        gumbNazaj.addEventListener("click", function() {
+            // Počistimo vsebino in prikažemo glavni gumb za kamero
+            glavnaVsebina.innerHTML = "";
+            glavnaVsebina.appendChild(gumbKamera);
+        });
+        // ***************************************************************
+
+        // KODA ZA GUMB "POSLUŠAJ" (ostane enaka)
+        gumbPoslusaj.addEventListener("click", function() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const izgovor = new SpeechSynthesisUtterance(zgodba);
+                const glasovi = window.speechSynthesis.getVoices();
+                const slovenskiGlas = glasovi.find(glas => glas.lang === 'sl-SI');
+                if (slovenskiGlas) {
+                    izgovor.lang = 'sl-SI';
+                    izgovor.voice = slovenskiGlas;
+                }
+                izgovor.pitch = 1;
+                izgovor.rate = 0.9;
+                window.speechSynthesis.speak(izgovor);
+            } else {
+                alert("OPROSTI, TVOJ BRSKALNIK NE ZNA GOVORITI.");
+            }
+        });
+
+        // KODA ZA GUMB "SHRANI" (ostane enaka)
+        gumbShrani.addEventListener("click", async function() {
+            gumbShrani.textContent = "SHRANJUJEM...";
+            gumbShrani.disabled = true;
+
+            const naslovStrojniceShrani = "/.netlify/functions/shrani";
+
+            try {
+                const odgovor = await fetch(naslovStrojniceShrani, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        ime: imeDrevesa,
+                        zgodba: zgodba
+                    }) 
+                });
+                const podatki = await odgovor.json();
+
+                if (!odgovor.ok || podatki.napaka) {
+                    throw new Error(podatki.napaka || "Neznana napaka pri shranjevanju.");
+                }
+
+                console.log("Uspešno shranjeno!", podatki.sporocilo);
+                gumbShrani.textContent = "USPEŠNO SHRANJENO!";
+                gumbShrani.style.backgroundColor = "#006400";
+
+            } catch (napaka) {
+                console.error("Ni uspelo shraniti:", napaka);
+                gumbShrani.textContent = "NAPAKA PRI SHRANJEVANJU";
+                gumbShrani.style.backgroundColor = "#D93025";
+                gumbShrani.disabled = false;
+            }
         });
     }
 

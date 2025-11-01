@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pisarna za Učitelja</title>
+    <link rel="stylesheet" href="stil.css">
+</head>
+<body>
+
+    <main class="vsebina">
+
+        <h1>PISARNA ZA UČITELJA</h1>
+        <h2>RAZREDNA SKRINJA ZAKLADOV</h2>
+
+        <button id="gumbPDF" class="gumb-akcija" style="background-color: #f4b400; color: #333;">
+            IZVOZI UČNI LIST (PDF)
+        </button>
+
+        <hr style="margin: 20px 0;">
+
+        <h3>VSE NAJDBE DO SEDAJ:</h3>
+        <div id="seznam-najdb">
+            <p>Nalaganje najdb iz skrinje...</p>
+        </div>
+
+    </main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="ucitelj.js"></script>
+</body>
+</html>

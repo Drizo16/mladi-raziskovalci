@@ -83,3 +83,84 @@ h2 {
     color: #777;
     text-transform: uppercase;
 }
+/* === DODATEK ZA FAZO 4 (Stran z rezultati) === */
+
+/* Škatla, ki drži tri slike */
+.slike-box {
+    display: flex; /* Postavi elemente enega zraven drugega */
+    justify-content: space-around; /* Enakomerno jih porazdeli */
+    align-items: center;
+    width: 100%;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+/* Začasne oznake za slike */
+.slika-placeholder {
+    width: 80px;
+    height: 80px;
+    background-color: #e0e0e0;
+    border: 2px dashed #aaa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 0.8em;
+    color: #555;
+    padding: 5px;
+    border-radius: 10px;
+}
+
+/* Odstavek za zgodbo */
+.zgodba {
+    font-size: 1.2em;
+    padding: 15px;
+    text-transform: uppercase;
+    color: #333;
+    line-height: 1.6; /* Malo več prostora med vrsticami za lažje branje */
+}
+
+/* Splošni stil za oba nova gumba */
+.gumb-akcija {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1.2em;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: white;
+    background-color: #34a853; /* Enaka zelena kot glavni gumb */
+    border: none;
+    padding: 15px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin-top: 15px;
+    width: 90%; /* Naj bosta gumba velika in lahko dosegljiva */
+    max-width: 400px;
+}
+
+/* Malo drugačna barva za gumb "Shrani" */
+#gumbShrani {
+    background-color: #4285F4; /* Modra barva */
+}
+/* === DODATEK ZA FAZO 4.5 (Slike rastlin) === */
+
+/* Slike rastlin v rezultatih */
+.slika-rastline-mala {
+    width: 80px;
+    height: 80px;
+    object-fit: cover; /* Slika naj pokrije celotno površino, obreže, če je treba */
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+/* === DODATEK ZA FAZO 4.5 (Popravek gumba "Nazaj") === */
+
+/* === POPRAVEK ZA GUMB "NAZAJ" === */
+
+#gumbNazaj {
+    background-color: #34a853; /* Tvoja želena zelena barva */
+    display: block; /* Prisili gumb v svojo vrstico */
+    margin-left: auto;  /* Poskrbi, da je na sredini */
+    margin-right: auto; /* Poskrbi, da je na sredini */
+
+}
