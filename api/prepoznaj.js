@@ -16,7 +16,7 @@ function parseMultipartForm(event) {
         });
         bb.on('close', () => resolve({ files }));
         bb.on('error', err => reject(err));
-        bb.end(Buffer.from(event.body, 'base64'));
+       bb.end(event.body);
     });
 }
 
