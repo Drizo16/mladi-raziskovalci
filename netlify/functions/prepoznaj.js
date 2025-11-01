@@ -1,10 +1,10 @@
-/* To je najina "Strojnica" - Netlify Funkcija */
+/* === CELOTNA KODA ZA prepoznaj.js (Strojnica) === */
+
 const fetch = require('node-fetch');
 
 exports.handler = async function(event, context) {
     
     // 1. KORAK: Preberi skrivni ključ iz "sefa" (Environment)
-    // process.env.IME_SPREMENLJIVKE
     const API_KLJUC = process.env.PLANTNET_API_KEY;
 
     // Varnostno preverjanje: Ali ključ sploh obstaja?
@@ -21,9 +21,9 @@ exports.handler = async function(event, context) {
         // Preberemo Base64 sliko, ki jo je poslal 'script.js'
         base64Slika = JSON.parse(event.body).slika;
         
-        // Odstranimo nepotreben delček 'data:image/jpeg;base64,'
-        // PlantNet potrebuje samo surovo Base64 kodo
-       
+        // TO JE PRAVILNA VERZIJA:
+        // Slike se NE dotikamo. Pošljemo jo naprej točno tako,
+        // kot jo je pripravila "recepcija" (script.js).
         
     } catch (e) {
         return {
@@ -52,10 +52,11 @@ exports.handler = async function(event, context) {
 
         // 4. KORAK: Preveri odgovor od PlantNeta
         
-        // Če PlantNet javi napako (npr. napačen ključ)
-        if (podatkiPlantNet.error) {
+        // Če PlantNet javi napako (npr. napačen ključ ali 'Unsupported Media Type')
+        if (!odgovorPlantNet.ok || podatkiPlantNet.error) {
             console.error("PlantNet napaka:", podatkiPlantNet.message);
-            throw new Error(`PlantNet javlja: ${podatkiPlantNet.message}`);
+            // Pošljemo natančno sporočilo o napaki nazaj na telefon
+            throw new Error(`PlantNet javlja: ${podatkiPlantNet.message || 'Neznana napaka'}`);
         }
         
         // Če PlantNet ni našel nobene rastline
@@ -107,3 +108,5 @@ exports.handler = async function(event, context) {
         };
     }
 };
+
+/* === KONEC KODE ZA prepoznaj.js === */
