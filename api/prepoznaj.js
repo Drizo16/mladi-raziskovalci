@@ -1,4 +1,4 @@
-/* === KODA ZA prepoznaj.js (Prevedena za Vercel) === */
+/* === KODA ZA prepoznaj.js (s POPRAVLJENIM, STROGIM ukazom) === */
 const fetch = require('node-fetch');
 const FormData = require('form-data');
 const busboy = require('busboy');
@@ -17,12 +17,12 @@ function parseMultipartForm(req) {
         });
         bb.on('close', () => resolve({ files }));
         bb.on('error', err => reject(err));
-        // TUKAJ JE KLJUČNA SPREMEMBA: Uporabimo 'req' (request) neposredno
+        // Popravek za Vercel: uporabi 'req' (request) neposredno
         req.pipe(bb);
     });
 }
 
-// TUKAJ JE GLAVNA SPREMEMBA: "export default" in "(req, res)"
+// "Vercel jezik": "export default" in "(req, res)"
 export default async function handler(req, res) {
 
     const PLANTNET_API_KEY = process.env.PLANTNET_API_KEY;
@@ -60,9 +60,25 @@ export default async function handler(req, res) {
         console.log(`[FAZA 2/3] PlantNet odgovor: ${domaceIme}`);
         console.log("[FAZA 3/3] Kličem Google AI...");
 
-        const modelName = "models/gemini-2.5-flash"; 
+        const modelName = "models/gemini-2.5-flash"; // Ime, ki sva ga našla
         const googleApiUrl = `https://generativelanguage.googleapis.com/v1/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
-        const ukaz = `TI SI PRIJAZNA RASTLINA... (Tvoj ukaz tukaj)`; // (skrajšano za preglednost)
+
+        // ***************************************************************
+        // TUKAJ JE NOV, STROG UKAZ
+        const ukaz = `
+            TI SI RASTLINA, KI SE PREDSTAVLJA 7-LETNEMU OTROKU.
+            IME RASTLINE: ${domaceIme}
+
+            TVOJ ODGOVOR MORA IZPOLNJEVATI VSE NASLEDNJE POGOJE:
+            1. ODGOVOR MORA BITI 100% DEJANSKO PRAVILEN IN RESNIČEN, NE IZMIŠLJEN.
+            2. NAPIŠI DVE (2) KRATKI, RESNIČNI POVEDI O TEJ RASTLINI.
+            3. NAPIŠI ENO (1) KRATKO, RESNIČNO ZANIMIVOST O TEJ RASTLINI.
+            4. NE SMEŠ PISATI NOBENIH FILOZOFSKIH NASVETOV ALI PESMI.
+            5. CELOTEN ODGOVOR MORA BITI V SLOVENŠČINI.
+            6. CELOTEN ODGOVOR MORA BITI Z VELIKIMI TISKANIMI ČRKAMI.
+            7. ZAČETI SE MORA TOČNO Z "POZDRAVLJEN! JAZ SEM...".
+        `;
+        // ***************************************************************
 
         const klicBody = { contents: [{ parts: [{ text: ukaz }] }] };
         const odgovorAI = await fetch(googleApiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(klicBody) });
@@ -72,7 +88,7 @@ export default async function handler(req, res) {
 
         console.log("[FAZA 3/3] Google AI je poslal zgodbo!");
 
-        // NOVO: Način pošiljanja odgovora v "Vercel jeziku"
+        // Pošljemo odgovor
         return res.status(200).json({
             drevo: domaceIme.toUpperCase(),
             zgodba: zgodbaOdAI, 
@@ -81,7 +97,6 @@ export default async function handler(req, res) {
 
     } catch (napaka) {
         console.error("Zgodila se je napaka v 'strojnici':", napaka);
-        // NOVO: Način pošiljanja napake v "Vercel jeziku"
         return res.status(500).json({ napaka: napaka.message });
     }
 };
