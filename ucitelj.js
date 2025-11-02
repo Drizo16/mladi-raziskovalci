@@ -1,26 +1,35 @@
-/* === KODA ZA MOŽGANE PISARNE: ucitelj.js === */
+/* === KODA ZA MOŽGANE PISARNE: ucitelj.js (Prevedena za Vercel) === */
 
 document.addEventListener("DOMContentLoaded", function() {
 
-    // Preverimo, ali je brskalnik naložil "tiskalnik"
-    if (!window.jspdf) {
-        alert("Napaka: Tiskalnik PDF (jsPDF) se ni uspel naložiti.");
-        return;
+    // Naložimo "tiskalnik" (jsPDF) s spleta
+    // Najprej preverimo, ali obstaja, preden ga uporabimo
+    if (typeof jspdf === 'undefined') {
+        console.error("Napaka: Tiskalnik PDF (jsPDF) se ni uspel naložiti.");
+        // Naložimo ga ročno, če ga HTML ni
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        document.head.appendChild(script);
     }
-
-    const { jsPDF } = window.jspdf; // Pripravimo "tiskalnik"
 
     const gumbPDF = document.getElementById("gumbPDF");
     const seznamDiv = document.getElementById("seznam-najdb");
 
-    // Sem bomo shranili podatke, ko pridejo iz "skrinje"
     let vseNajdbe = [];
 
     // 1. Funkcija, ki naloži podatke iz "skrinje"
     async function naloziNajdbe() {
+        // Počakamo, da se tiskalnik naloži, če ga je treba
+        while (typeof jspdf === 'undefined') {
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
         try {
-            // Pokličemo najino novo "strojnico za branje"
+            // ***************************************************************
+            // TUKAJ JE POPRAVEK: Kličemo novo Vercel pot
             const odgovor = await fetch("/api/pridobi-najdbe");
+            // ***************************************************************
+
             if (!odgovor.ok) {
                 const napaka = await odgovor.json();
                 throw new Error(napaka.napaka || "Napaka strežnika");
@@ -28,16 +37,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
             vseNajdbe = await odgovor.json();
 
-            // Počistimo sporočilo "Nalaganje..."
             seznamDiv.innerHTML = "";
 
             if (vseNajdbe.length === 0) {
-                seznamDiv.innerHTML = "<p>Skrinja zakladov je še prazna.</p>";
-                gumbPDF.disabled = true; // Onemogočimo gumb, če ni ničesar
+                seznamDiv.innerHTML = "<p>SKRINJA ZAKLADOV JE ŠE PRAZNA.</p>";
+                gumbPDF.disabled = true;
                 return;
             }
 
-            // Prikažemo najdbe na strani
             vseNajdbe.forEach(najdba => {
                 const vnosDiv = document.createElement("div");
                 vnosDiv.style.borderBottom = "1px solid #ccc";
@@ -56,55 +63,45 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // 2. Funkcija za izdelavo PDF-ja (sproži jo gumb)
     function ustvariPDF() {
-        if (vseNajdbe.length === 0) {
-            alert("Skrinja je prazna, ni česa izvoziti.");
+        if (vseNajdbe.length === 0 || typeof jspdf === 'undefined') {
+            alert("Skrinja je prazna ali pa se tiskalnik še nalaga.");
             return;
         }
 
+        const { jsPDF } = window.jspdf; // Pripravimo "tiskalnik"
         gumbPDF.textContent = "USTVARJAM PDF...";
 
         const doc = new jsPDF();
-
-        // Naslov
         doc.setFontSize(20);
         doc.text("Učni List: Naše Najdbe iz Gozda", 10, 20);
 
-        let y = 35; // Začetna pozicija (Y os)
+        let y = 35;
 
-        // Zanka čez vse najdbe
         vseNajdbe.forEach((najdba, index) => {
-            // Preverimo, če imamo dovolj prostora na strani
-            // (297mm je višina A4, pustimo malo roba)
             if (y > 270) { 
-                doc.addPage(); // Dodaj novo stran
-                y = 15; // Ponastavi pozicijo na vrh
+                doc.addPage();
+                y = 15;
             }
 
             doc.setFontSize(14);
-            doc.setFont(undefined, 'bold'); // Krepko
+            doc.setFont(undefined, 'bold');
             doc.text(`${index + 1}. ${najdba.ime_rastline}`, 10, y);
 
-            y += 8; // Premakni se dol
+            y += 8;
 
             doc.setFontSize(10);
-            doc.setFont(undefined, 'normal'); // Normalno
+            doc.setFont(undefined, 'normal');
 
-            // Razbijemo dolgo zgodbo v več vrstic, da se prilega strani
-            const zgodbaVrstice = doc.splitTextToSize(najdba.zgodba, 180); // 180mm širine
-            doc.text(zgodbaVrstice, 15, y); // Malo zamaknjeno
+            const zgodbaVrstice = doc.splitTextToSize(najdba.zgodba, 180);
+            doc.text(zgodbaVrstice, 15, y);
 
-            // Izračunamo, koliko prostora smo porabili, in dodamo pavzo
             y += (zgodbaVrstice.length * 5) + 10; 
         });
 
-        // Shrani datoteko
         doc.save("ucni-list-najdbe.pdf");
         gumbPDF.textContent = "IZVOZI UČNI LIST (PDF)";
     }
 
-    // 3. Povežemo dogodke
     gumbPDF.addEventListener("click", ustvariPDF);
-
-    // 4. Zaženemo nalaganje podatkov, ko se stran odpre
     naloziNajdbe();
 });
